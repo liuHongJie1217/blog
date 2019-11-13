@@ -109,6 +109,17 @@
     
     
     <entry>
+      <title>音乐分享</title>
+      <link href="/music/index.html"/>
+      <url>/music/index.html</url>
+      
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="\assets\js\Meting.min.js"></script><!-- <iframe align="middle" frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=450 src="www.xiami.com/collect/796705375"></iframe> -->    <div id="aplayer-QFrSSdiJ" class="aplayer aplayer-tag-marker meting-tag-marker"         data-id="796705375" data-server="xiami" data-type="playlist" data-mode="circulation" data-autoplay="false" data-mutex="true" data-listmaxheight="340px" data-preload="auto" data-theme="#FF4081"    ></div>]]></content>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>分类</title>
       <link href="/categories/index.html"/>
       <url>/categories/index.html</url>
@@ -125,17 +136,6 @@
       <url>/about/index.html</url>
       
         <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="\assets\js\Meting.min.js"></script><h2 id="个人介绍"><a href="#个人介绍" class="headerlink" title="个人介绍"></a>个人介绍</h2><p><code>Design, to build a simpler world</code></p><blockquote><p> 工作刚满一年，Java开发。</p><p>对一切不了解的事物都感兴趣，做这个博客也是觉得好玩。</p><p>人生三大乐趣：音乐，电影，羽毛球</p></blockquote><h2 id="联系方式"><a href="#联系方式" class="headerlink" title="联系方式"></a>联系方式</h2><p>GitHub: <a href="https://github.com/liuHongJie1217" target="_blank" rel="noopener">rainbow</a></p><p>微博：<a href="https://weibo.com/7336185047/profile?topnav=1&wvr=6&is_all=1" target="_blank" rel="noopener">存在即合理云云</a></p><p>邮箱：<a href="mailto:840474510@qq.com" target="_blank" rel="noopener">840474510@qq.com</a></p>]]></content>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>音乐分享</title>
-      <link href="/music/index.html"/>
-      <url>/music/index.html</url>
-      
-        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="\assets\css\APlayer.min.css"><script src="\assets\js\APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="\assets\js\Meting.min.js"></script><!-- <iframe align="middle" frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=450 src="www.xiami.com/collect/796705375"></iframe> -->    <div id="aplayer-eYSMAHtW" class="aplayer aplayer-tag-marker meting-tag-marker"         data-id="796705375" data-server="xiami" data-type="playlist" data-mode="circulation" data-autoplay="false" data-mutex="true" data-listmaxheight="340px" data-preload="auto" data-theme="#FF4081"    ></div>]]></content>
       
     </entry>
     
