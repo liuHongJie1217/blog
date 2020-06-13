@@ -56,6 +56,33 @@
     
     
     <entry>
+      <title>MySQL索引</title>
+      <link href="/2020/03/10/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL%E7%B4%A2%E5%BC%95/"/>
+      <url>/2020/03/10/%E6%95%B0%E6%8D%AE%E5%BA%93/MySQL%E7%B4%A2%E5%BC%95/</url>
+      
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="/assets/css/APlayer.min.css"><script src="/assets/js/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="/assets/js/Meting.min.js"></script><h4 id="MySQL索引底层原理讲解："><a href="#MySQL索引底层原理讲解：" class="headerlink" title="MySQL索引底层原理讲解："></a>MySQL索引底层原理讲解：</h4><blockquote><h6 id="1-MySQL中到底是怎么生成B-树的"><a href="#1-MySQL中到底是怎么生成B-树的" class="headerlink" title="1.MySQL中到底是怎么生成B+树的"></a>1.MySQL中到底是怎么生成B+树的</h6><h6 id="2-我们该如何判断一个SQL是否可以走索引"><a href="#2-我们该如何判断一个SQL是否可以走索引" class="headerlink" title="2.我们该如何判断一个SQL是否可以走索引"></a>2.我们该如何判断一个SQL是否可以走索引</h6><h6 id="3-用实际案例来分析索引底层原理"><a href="#3-用实际案例来分析索引底层原理" class="headerlink" title="3.用实际案例来分析索引底层原理"></a>3.用实际案例来分析索引底层原理</h6><h6 id="4-P7-P8会如何面试索引底层原理"><a href="#4-P7-P8会如何面试索引底层原理" class="headerlink" title="4.P7,P8会如何面试索引底层原理"></a>4.P7,P8会如何面试索引底层原理</h6></blockquote><h5 id="基础："><a href="#基础：" class="headerlink" title="基础："></a>基础：</h5><blockquote><h5 id="1-gt-MySQL中varchar与char区别："><a href="#1-gt-MySQL中varchar与char区别：" class="headerlink" title="1&gt; MySQL中varchar与char区别："></a>1&gt; MySQL中varchar与char区别：</h5><p>1.定长和变长<br>char表示定长，长度固定，varchar表示变长即长度可变。如char(10)，表示最多能存储10个字符，无论你插入的是多少，都是10个，如果少于10个，则用空格填满。而varchar(10)，小于10的话，则插入多少个字符就是多少<br>2.存储的容量不同<br>对于char来说，最多能存放的字符个数255，与编码无关。而varchar最多能存放65532个字符，varchar的最大有效长度由最大行大小和使用的字符集确定；整体最大长度是 65,532(65535-3=65532  减1的原因是实际行存储从第二个字节开始’;  减2的原因是varchar头部的2个字节表示长度;)字节    </p></blockquote><blockquote><h5 id="2-gt-局部性原理："><a href="#2-gt-局部性原理：" class="headerlink" title="2&gt; 局部性原理："></a>2&gt; 局部性原理：</h5><p>我们在通过sql条件查询 where 关键字 后面的条件查询时，其中的过程是数据库会先将该条数据从磁盘中读取出来，然后在内存中根据查询条件进行逻辑比较匹配到对应的数据后返回结果，而将数据从磁盘中读取这一过程叫做磁盘IO；<br>但是我们可以通过 SHOW GLOBAL STATUS like ‘Innodb_page_size’ 可以发现其实我们在取数据时，MySQL会以页为最小单位返回数据，默认一页是16kb；那为什么会以页为单位呢，这就要说到局部性原理了；<br>局部性原理即用我理解的意思来说就是计算机在读取磁盘数据放入CPU的时候默认你读取的当前数据后还会进行对当前数据相邻的数据进行读取，所以计算机会以该数据的当前页(4Kb)为最小单位对所有数据进行磁盘IO放进内存中，这样做的目的就是为了减少磁盘IO的操作，提高系统的性能</p></blockquote><blockquote><h5 id="3-gt-数据行的概念："><a href="#3-gt-数据行的概念：" class="headerlink" title="3&gt; 数据行的概念："></a>3&gt; 数据行的概念：</h5><p>我们在存储和查询数据时所对应的行不仅限于我们自己规定的字段信息，还有Innodb隐藏的三个字段：其中有一个很重要是rowID，作用是在我们定义表中没有定义唯一约束，那么Innidb 会自动将 rowID 成为这个表的唯一约束即主键</p></blockquote><blockquote><h5 id="4-gt-回表："><a href="#4-gt-回表：" class="headerlink" title="4&gt; 回表："></a>4&gt; 回表：</h5><p>首先要理解，我们在创建一张表的时候不管你是否指定了唯一约束，指定了就会以它为主键创建聚集索引，没有指定也会让行的隐藏字段rowID最为主键，所以我们每张表都会有一个主键；而我们每次创建的索引其实都会生成一张表即为索引表，结构就是B+Tree。最后我们过创建的索引查询到该行的主键，再通过主键查询到聚集索引表后查询到的数据即为回表；</p></blockquote><blockquote><h5 id="5-gt-最左前缀原则"><a href="#5-gt-最左前缀原则" class="headerlink" title="5&gt;最左前缀原则"></a>5&gt;最左前缀原则</h5><p>即我们在走索引的时会先去根据条件来匹配对应数据的位置，自上向下；我们在创建联合索引的时候会根据索引字段从左向右排序形成B+Tree，也就是说联合索引的最右的字段可能是无序的，所以决定我们走不走索引的关键是左边的索引字段能不能匹配，如果左边是？或者%都不会走索引；</p></blockquote><blockquote><h5 id="6-gt-B-Tree-B-Tree的原理分析"><a href="#6-gt-B-Tree-B-Tree的原理分析" class="headerlink" title="6&gt; B-Tree,B+Tree的原理分析"></a>6&gt; B-Tree,B+Tree的原理分析</h5><h6 id="B-Tree的基本介绍："><a href="#B-Tree的基本介绍：" class="headerlink" title="B-Tree的基本介绍："></a>B-Tree的基本介绍：</h6><p>B树通过重新组织节点，降低树的高度，并且减少i/o读写次数来提升效率；<br><img alt data-src="/img/MySQL/B-Tree.png" class="lazyload"><br>1&gt; 如图B树通过重新组织节点，降低了树的高度<br>2&gt; 文件系统及数据库系统的设计者利用磁盘与读取原理(局部性原理)，将一个节点的大小设为等于一个页(一页大小通常是4K，MySQL InnoDB是16k)，这样每个节点只需要一次I/O就可以完成加载<br>3&gt; 将树的度M设置为1024，在600亿个元素中最多只需要4次I/O操作就可以读取到想要的元素，B树(B+)广泛应用于文件存储及数据库系统中。树的度：树中有几个分叉，度就有几个；公式：树中节点数 = 总分叉数 + 1</p></blockquote><blockquote><h6 id="B树说明："><a href="#B树说明：" class="headerlink" title="B树说明："></a>B树说明：</h6><p>1&gt; B树的阶：节点的最多子节点个数。超出节点会溢出，产生节点分裂，图如下：<br><img alt data-src="/img/MySQL/B%E6%A0%91%E9%98%B6.png" class="lazyload"></p></blockquote><p><img alt data-src="/img/MySQL/B%E6%A0%91%E9%98%B6%E8%8A%82%E7%82%B9%E5%88%86%E8%A3%82.png" class="lazyload"></p><blockquote><p>2&gt; B树的搜索，从根节点开始，对节点内的关键字(有序)序列进行二分查找，如果命中则结束，否则进入查询关键字所属范围的儿子节点，重复查询，直到所对应的儿子节点指针为空，或已经是叶子节点<br>3&gt; 关键字集合分布在整颗树中，即叶子节点和非叶子节点都存放数据<br>4&gt; 搜索有可能在非叶子节点结束<br>5&gt; 其搜索性能等价于在关键字全集内做一次二分查找</p></blockquote><blockquote><h6 id="B-树说明："><a href="#B-树说明：" class="headerlink" title="B+树说明："></a>B+树说明：</h6><p>1&gt; B+树的搜索与B树基本相同。区别是B+树只有达到叶子节点才能命中(B树可以在非叶子节点命中)，其性能也等价于在关键字全集做一次二分查找<br>2&gt; 所有关键字都出现在叶子节点的链表中(即数据只能在叶子节点【也叫稠密的索引】)，且链表中的关键字(数据)恰好是有序的<br>3&gt; 不能在非叶子节点命中<br>4&gt; 非叶子节点相当于是叶子节点的索引(稀疏索引)，叶子节点相当于是存储(关键字）数据的数据层<br>5&gt; 更适合文件索引系统<br>6&gt; B树 和 B+树各有自己的应用场景，不能说B+树完全比B树好，反之亦然</p></blockquote><h5 id="MySQL索引："><a href="#MySQL索引：" class="headerlink" title="MySQL索引："></a>MySQL索引：</h5><p>围绕一个例子来讲解：<br>定义一张表：IndexTest<br>现在准备往里面插入8条数据：<br>insert into IndexTest values(4,3,1,1,’d’);<br>insert into IndexTest values(1,1,1,1,’a’);<br>insert into IndexTest values(8,8,8,8,’h’);<br>insert into IndexTest values(2,2,2,2,’b’);<br>insert into IndexTest values(5,2,3,5,’d’);<br>insert into IndexTest values(3,3,1,1,’d’);<br>insert into IndexTest values(7,4,5,5,’g’);<br>insert into IndexTest values(6,6,4,4,’f’);</p><p>根据局部性原理我可以牵引出一个以”页”为存储数据单位的概念，那么这个”页”是什么样子的呢:<br>![](/img/MySQL/屏幕快照 2020-02-23 下午3.55.00.png)</p><h5 id="1-gt-用户数据区域："><a href="#1-gt-用户数据区域：" class="headerlink" title="1&gt;用户数据区域："></a>1&gt;用户数据区域：</h5><p>用户数据区域存放的数据及为我们自己插入的数据，也就是说我们在用 “insert” 关键字的时候所要插入的数据<br>以上为例 我们进行插入操作 及页数据就会变成 —&gt;</p><p>![](/img/MySQL/屏幕快照 2020-02-23 下午4.28.33.png)<br>从中可以发现：我们在使用Innodb的进行数据插入成功后，数据是以唯一索引进行排序后的存储的，这样做势必会影响插入操作的时间，但是同时他会提高我们查询的时间，例：我们在取a=3的数据时，先会把这页数据通过磁盘IO读取到内存中，在内存中进行比较，当比计较完(4,3,1,1,’d’)时它就不会再向后进行比较了，因为Innodb已经将插入的数据已经排好了序。这样做也是对我们查询的性能做了优化。<br>但是继续思考，如果我们现在存的字段很少，极端情况下我们就只存了一个主键Id，但是我们Innodb每一页是以16Kb为存储数据的，这样就会产生用户数据区域中存储数据链很长很长，假定8w，现在我们就是需要查询a=8w的这条数据，那么是不是前面做的优化就没有用了，这是我们就需要了解”页”中的另一个区域—&gt;页目录</p><h5 id="2-gt-页目录："><a href="#2-gt-页目录：" class="headerlink" title="2&gt; 页目录："></a>2&gt; 页目录：</h5><p>页目录我们可以理解为书的目录，即将每一章的内容的起始页码记录下来，对每一章节的所有小章节内容进行分组，换成我们的数据存储如下图：<br><img alt data-src="/img/MySQL/%E9%A1%B5-%E7%9B%AE%E5%BD%95.png" class="lazyload"><br>可以看出Innodb已经将我们该页数据的四条内容分成了两组，具体怎么分组涉及到的算法和机制暂不赘述，那么根据前面的解释我们就可以get到页目录里的两个目录项分别就是”1”,”4”;<br><img alt data-src="/img/MySQL/%E9%A1%B5-%E7%9B%AE%E5%BD%952.png" class="lazyload"><br>那么现在就可以看出，如果我们再去找某个数据时，Innodb会先去页目录匹配，再根据页目录的起始位置去查询，这样就算数据量大并且要查询的条件也很极端，也不会进行全部扫描，也能够大大的缩短定位的速度；<br>前面我们说”页”是我们Innodb中存储数据最小且在运行中固定的存储单位，为16Kb，<br>但是随着我们数据量慢慢变大超过了16Kb的话会发生什么呢？</p><h5 id="3-gt-开辟新页："><a href="#3-gt-开辟新页：" class="headerlink" title="3&gt; 开辟新页："></a>3&gt; 开辟新页：</h5><p><img alt data-src="/img/MySQL/%E5%BC%80%E8%BE%9F%E6%96%B0%E9%A1%B5.png" class="lazyload"></p><p>结合上面的图也可以发现，这两个页数据其实是连续的，他们通过页头的next指针和prev指针相互关联，并且第二页的数据也是经过排序和分组的；现在我们如果需要查”a=8”这条数据应该怎么查呢？是不是应该先从第100页(其实就是其实页)开始查询页目录然后发现没有在根据next指针查询第200页的页目录然后找到对应数据，也就是说在查询某条数据时是通过其实页然后根据next指针依次查询。<br>思考：假设现在有n页数据我要的数据就在n页，那是不是就需要从起始页查询到n页？很明显，这样不是我们希望的，那沿用刚才页目录的思想，我们就可以将”100页”及”200页”这两页在开辟新的一页，来记录这两页的 “地址”和”最小主键”，这种页就叫目录页：<br><img alt data-src="/img/MySQL/%E7%9B%AE%E5%BD%95%E9%A1%B5.png" class="lazyload"><br>顶端的是目录页，下面的就是数据页，这种结构就是B+Tree也就是我们InonDB的索引结构</p><h5 id="4-gt-B-Tree"><a href="#4-gt-B-Tree" class="headerlink" title="4&gt; B+Tree:"></a>4&gt; B+Tree:</h5><p><img alt data-src="/img/MySQL/B+Tree.png" class="lazyload"><br>可以看出B+Tree的叶子节点保存了我们所有的数据，而非叶子节点又冗余了一份数据，这样的好处是在查询某个数据是可以通过该特点迅速定位到节点数据，同时在范围查询是，比如查询&gt;1的所有数据，就可通过叶子节点先定位到1的节点，再根据数据链一一查出右边的数据即可；<br>根据这些特点我们再对照着刚才分析出来的目录页看看，第一，每一页都是B+Tree的一个节点，而下面的数据页就是我们的叶子节点，上面的目录页就是我们冗余的非叶子节点，非叶子节点也保存了叶子节点的数据，唯一不同的是InnoDB不光让每个节点指向了下个节点，还存了上个节点的信息，也就是双向链表，这样的好处就是在范围查询时更加方便，比如前面说了传统的B+Tree在范围查询时&gt;1的时候确实好查，但是&lt;1呢？InnoDB在传统的基础上又做了优化，更加便于范围查询；</p><h5 id="5-gt-MySQL-InnoDB-B-Tree："><a href="#5-gt-MySQL-InnoDB-B-Tree：" class="headerlink" title="5&gt; MySQL InnoDB B+Tree："></a>5&gt; MySQL InnoDB B+Tree：</h5><p><img alt data-src="/img/MySQL/%E4%B8%BB%E9%94%AE%E7%B4%A2%E5%BC%95B+Tree.png" class="lazyload"><br>这就是InnoDB根据主键索引创建出来的B+Tree，我们也称他为聚集索引；<br>而我们通过条件查询从这个Tree的顶端依次查询到底端，这种方式就是我们常说的走索引，而我们自左向右的查询就叫做全表扫描；<br>一些关于主键作为索引的建议：<br>为什么我们不建议用UUID作为生成主键的生成规则：<br>1.是因为如果我们用的UUID作为主键的生成规则，主键ID会非常的长，势必会占用一部分空间，那么可能一页本来可以存10条数据，只能存5条，那么页也会变多，占用的内存也会多；查询数据取数据时磁盘IO次数也会变多，性能也会收到影响，还有页数越多，Tree的高度也会增高，而我们做索引是自上而下，高度越高那查的速度也就相对越慢；<br>2.因为UUDI生成是无序的，我们在插入数据是会先排序，那么使用UUID就会造成每次插入数据每次进行比较+位移的操作，降低插入速度；</p><h5 id="6-gt-联合索引："><a href="#6-gt-联合索引：" class="headerlink" title="6&gt; 联合索引："></a>6&gt; 联合索引：</h5><p><img alt data-src="/img/MySQL/%E7%BB%84%E5%90%88%E7%B4%A2%E5%BC%95.png" class="lazyload"><br>所谓组合索引，就是将定义的组合索引字段根据前后顺序一一比计较排序形成B+Tree的叶子节点也就是数据数据页，再根据数据页形成联合索引；<br>数据页不光存储了联合索引字段的数据，还存储了该索引对应行数据的主键的ID，这样做的目的是为了，当查询的内容不光包含索引字段的信息，还有其他的信息，如 select * …，这时就会通过主键ID去查询该行的所有数据，这也叫做回表。如果在联合索引的数据页再把所有的数据存储一份这样的话磁盘空间会大大的被占用，你想嘛，建一个索引就复制一份完整的数据，那不得撑爆磁盘；</p><h5 id="7-gt-案例："><a href="#7-gt-案例：" class="headerlink" title="7&gt; 案例："></a>7&gt; 案例：</h5><p>下面这些sql语句会走索引吗？(可以使用 explain 关键字来查看是否走索引)</p><blockquote><p>select * from IndexTest where c=1 and d=1;<br>分析：参考基础最左前缀原则<br>结论：不会</p></blockquote><blockquote><p>select * from IndexTest where b &gt; 1;<br>分析： 查询优化器：“可以走索引但是没必要”<br>简单来说就是这条sql可以走联合索引，但是查询优化器判断觉得这样比全表扫描还慢，所以没有走索引；分析一下如果走索引那么就会先通过联合索引查到对应的主键，再通过主键查询聚集索引表，在自上向下查询到区间的数据。<br>结论：不会</p></blockquote><blockquote><p>select b from IndexTest<br>分析：第一，不管是走联合索引还是聚集索引都不满足条件，但是我们可以分析出，联合索引中他是存了”b”字段的信息的，也就是说我们可以通过联合索引或是全表扫描都可以获取”b”字段的信息；第二：因为是联合索引所以它存的值不完整，也就是说，一页数据中存的数据就更多，可能在聚合索引中一页存10条数据，在联合索引中一页可以存20条，那么势必磁盘IO的次数就少了，节约了时间及空间，所以查询优化器决定走联合索引；<br>结论：会</p></blockquote>]]></content>
+      
+      
+      <categories>
+          
+          <category> 数据库 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> Mysql </tag>
+            
+            <tag> 数据库 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>Java数据机构-记手写的一个简单链表结构</title>
       <link href="/2020/02/06/Java/%E8%AE%B0%E6%89%8B%E5%86%99%E7%9A%84%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E9%93%BE%E8%A1%A8%E7%BB%93%E6%9E%84/"/>
       <url>/2020/02/06/Java/%E8%AE%B0%E6%89%8B%E5%86%99%E7%9A%84%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E9%93%BE%E8%A1%A8%E7%BB%93%E6%9E%84/</url>
@@ -99,9 +126,9 @@
       
         <tags>
             
-            <tag> 优化 </tag>
-            
             <tag> 数据库 </tag>
+            
+            <tag> 优化 </tag>
             
         </tags>
       
@@ -273,22 +300,22 @@
     
     
     <entry>
-      <title>音乐分享</title>
-      <link href="/music/index.html"/>
-      <url>/music/index.html</url>
+      <title>标签</title>
+      <link href="/tags/index.html"/>
+      <url>/tags/index.html</url>
       
-        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="/assets/css/APlayer.min.css"><script src="/assets/js/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="/assets/js/Meting.min.js"></script><!-- <iframe align="middle" frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=450 src="www.xiami.com/collect/796705375"></iframe> -->    <div id="aplayer-uloFMBMJ" class="aplayer aplayer-tag-marker meting-tag-marker"         data-id="1183138835" data-server="xiami" data-type="playlist" data-mode="circulation" data-autoplay="false" data-mutex="true" data-listmaxheight="340px" data-preload="auto" data-theme="#FF4081"    ></div>]]></content>
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="/assets/css/APlayer.min.css"><script src="/assets/js/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="/assets/js/Meting.min.js"></script>]]></content>
       
     </entry>
     
     
     
     <entry>
-      <title>标签</title>
-      <link href="/tags/index.html"/>
-      <url>/tags/index.html</url>
+      <title>音乐分享</title>
+      <link href="/music/index.html"/>
+      <url>/music/index.html</url>
       
-        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="/assets/css/APlayer.min.css"><script src="/assets/js/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="/assets/js/Meting.min.js"></script>]]></content>
+        <content type="html"><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="/assets/css/APlayer.min.css"><script src="/assets/js/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="/assets/js/Meting.min.js"></script><!-- <iframe align="middle" frameborder="no" border="0" marginwidth="0" marginheight="0" width=330 height=450 src="www.xiami.com/collect/796705375"></iframe> -->    <div id="aplayer-CvkwOQDt" class="aplayer aplayer-tag-marker meting-tag-marker"         data-id="1183138835" data-server="xiami" data-type="playlist" data-mode="circulation" data-autoplay="false" data-mutex="true" data-listmaxheight="340px" data-preload="auto" data-theme="#FF4081"    ></div>]]></content>
       
     </entry>
     
